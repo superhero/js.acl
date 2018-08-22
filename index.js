@@ -23,18 +23,26 @@ module.exports = class Acl
               acl.addRoleChild(role, child)
             break
 
-          case 'resources':
-            for(const resource in roles[role].resources)
-            {
-              acl.addRoleResource(role, resource)
+          case 'domains':
+            if(roles[role].domains)
+              for(const domain in roles[role].domains)
+              {
+                acl.addRoleDomain(role, domain)
 
-              const permissions = Array.isArray(roles[role].resources[resource])
-              ?  roles[role].resources[resource]
-              : [roles[role].resources[resource]]
+                for(const resource in roles[role].domains[domain])
+                {
+                  acl.addRoleDomainResource(role, domain, resource)
 
-              for(const permission of permissions)
-                acl.addRoleResourcePermission(role, resource, permission)
-            }
+                  const
+                  _reference  = roles[role].domains[domain][resource],
+                  permissions = Array.isArray(_reference)
+                  ?  _reference
+                  : [_reference]
+
+                  for(const permission of permissions)
+                    acl.addRoleDomainResourcePermission(role, domain, resource, permission)
+                }
+              }
             break
 
           default:
@@ -53,15 +61,13 @@ module.exports = class Acl
 
   addRole(role)
   {
-    if(this.hasRole(role))
-      return // preventing reinitializing an existing role
-
-    this.roles[role] =
-    {
-      users     : [],
-      children  : [],
-      resources : {}
-    }
+    if(!this.hasRole(role))
+      this.roles[role] =
+      {
+        users     : [],
+        children  : [],
+        domains   : {}
+      }
   }
 
   removeRole(role)
@@ -96,10 +102,8 @@ module.exports = class Acl
     this.addRole(child)
     this.addRole(role)
 
-    if(this.hasRoleChildRecursively(child, role))
-      return // preventing recursion
-
-    this.roles[role].children.push(child)
+    if(!this.hasRoleChildRecursively(child, role))
+      this.roles[role].children.push(child)
   }
 
   removeRoleChild(role, child)
@@ -121,10 +125,8 @@ module.exports = class Acl
   {
     this.addRole(role)
 
-    if(this.hasRoleUser(role, user))
-      return // preventing duplicate users definition
-
-    this.roles[role].users.push(user)
+    if(!this.hasRoleUser(role, user))
+      this.roles[role].users.push(user)
   }
 
   removeRoleUser(role, user)
@@ -142,63 +144,85 @@ module.exports = class Acl
       this.removeRoleUser(role, user)
   }
 
-  hasRoleResource(role, resource)
+  hasRoleDomain(role, domain)
   {
     return this.hasRole(role)
-        && resource in this.roles[role].resources
+        && domain in this.roles[role].domains
   }
 
-  addRoleResource(role, resource)
+  hasRoleDomainResource(role, domain, resource)
+  {
+    return this.hasRoleDomain(role, domain)
+        && resource in this.roles[role].domains[domain]
+  }
+
+  hasRoleDomainResourcePermission(role, domain, resource, permission)
+  {
+    return this.hasRoleDomainResource(role, domain, resource)
+        && this.roles[role].domains[domain][resource].includes(permission)
+  }
+
+  removeRoleDomain(role, domain)
+  {
+    if(this.hasRole(role))
+      delete this.roles[role].domains[domain]
+  }
+
+  removeRoleDomainResource(role, domain, resource)
+  {
+    if(this.hasRoleDomain(role, domain))
+      delete this.roles[role].domains[domain][resource]
+  }
+
+  removeDomain(domain)
+  {
+    for(const role in this.roles)
+      this.removeRoleDomain(role, domain)
+  }
+
+  removeDomainResource(domain, resource)
+  {
+    for(const role in this.roles)
+      this.removeRoleDomainResource(role, domain, resource)
+  }
+
+  addRoleDomain(role, domain)
   {
     this.addRole(role)
 
-    if(this.hasRoleResource(role, resource))
-      return // preventing reinitializing an existing role resource
-
-    this.roles[role].resources[resource] = []
+    if(!this.hasRoleDomain(role, domain))
+      this.roles[role].domains[domain] = {}
   }
 
-  removeRoleResource(role, resource)
+  addRoleDomainResource(role, domain, resource)
   {
-    if(this.hasRole(role))
-      delete this.roles[role].resources[resource]
+    this.addRoleDomain(role, domain)
+
+    if(!this.hasRoleDomainResource(role, domain))
+      this.roles[role].domains[domain][resource] = []
   }
 
-  removeResource(resource)
+  addRoleDomainResourcePermission(role, domain, resource, permission)
   {
-    for(const role in this.roles)
-      this.removeRoleResource(role, resource)
+    this.addRoleDomainResource(role, domain, resource)
+
+    if(!this.hasRoleDomainResourcePermission(role, domain, resource, permission))
+      permission && this.roles[role].domains[domain][resource].push(permission)
   }
 
-  hasRoleResourcePermission(role, resource, permission)
+  removeRoleDomainResourcePermission(role, domain, resource, permission)
   {
-    return this.hasRoleResource(role, resource)
-        && this.roles[role].resources[resource].includes(permission)
-  }
-
-  addRoleResourcePermission(role, resource, permission)
-  {
-    this.addRoleResource(role, resource)
-
-    if(this.hasRoleResourcePermission(role, resource, permission))
-      return // preventing duplicate permissions
-
-    permission && this.roles[role].resources[resource].push(permission)
-  }
-
-  removeRoleResourcePermission(role, resource, permission)
-  {
-    if(this.hasRoleResource(role, resource))
+    if(this.hasRoleDomainResource(role, domain, resource))
     {
-      const i = this.roles[role].resources[resource].indexOf(permission)
-      ~i && this.roles[role].resources[resource].splice(i, 1)
+      const i = this.roles[role].domains[domain][resource].indexOf(permission)
+      ~i && this.roles[role].domains[domain][resource].splice(i, 1)
     }
   }
 
-  removeResourcePermission(resource, permission)
+  removeDomainResourcePermission(domain, resource, permission)
   {
     for(const role in this.roles)
-      this.removeRoleResourcePermission(role, resource, permission)
+      this.removeRoleDomainResourcePermission(role, domain, resource, permission)
   }
 
   getUserRoles(user)
@@ -259,35 +283,35 @@ module.exports = class Acl
     return roles
   }
 
-  isUserAuthorized(user, resource, permission)
+  isUserAuthorized(user, domain, resource, permission)
   {
     const roles = this.getUserRoles(user)
 
     for(const role of roles)
-      if(this.isRoleAuthorized(role, resource, permission))
+      if(this.isRoleAuthorized(role, domain, resource, permission))
         return true
 
     return false
   }
 
-  isRoleAuthorized(role, resource, permission)
+  isRoleAuthorized(role, domain, resource, permission)
   {
     const roles = this.getRolesRecursively(role)
 
     if(permission)
     {
       for(const role of roles)
-        if(this.hasRoleResourcePermission(role, resource, permission)
-        || this.hasRoleResourcePermission(role, '*', permission)
-        || this.hasRoleResourcePermission(role, resource, '*')
-        || this.hasRoleResourcePermission(role, '*', '*'))
+        if(this.hasRoleDomainResourcePermission(role, domain, resource, permission)
+        || this.hasRoleDomainResourcePermission(role, domain, '*', permission)
+        || this.hasRoleDomainResourcePermission(role, domain, resource, '*')
+        || this.hasRoleDomainResourcePermission(role, domain, '*', '*'))
           return true
     }
     else
     {
       for(const role of roles)
-        if(this.hasRoleResource(role, resource)
-        || this.hasRoleResource(role, '*'))
+        if(this.hasRoleDomainResource(role, domain, resource)
+        || this.hasRoleDomainResource(role, domain, '*'))
           return true
     }
 

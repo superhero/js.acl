@@ -15,13 +15,13 @@ describe('acl', () =>
       acl.addRoleUser('bar', 'foobaz')
       acl.addRoleChild('bar', 'foo')
       acl.addRoleChild('bar', 'baz')
-      acl.addRoleResource('baz', 'res-0')
-      acl.addRoleResourcePermission('foo', 'res-1', 'perm-1-1')
-      acl.addRoleResourcePermission('foo', 'res-2', 'perm-2-1')
-      acl.addRoleResourcePermission('foo', 'res-2', 'perm-2-2')
-      acl.addRoleResourcePermission('baz', 'res-1', 'perm-1-1')
-      acl.addRoleResourcePermission('baz', 'res-1', 'perm-1-2')
-      acl.addRoleResourcePermission('baz', 'res-1', 'perm-1-3')
+      acl.addRoleDomainResource('baz', 'domain', 'res-0')
+      acl.addRoleDomainResourcePermission('foo', 'domain', 'res-1', 'perm-1-1')
+      acl.addRoleDomainResourcePermission('foo', 'domain', 'res-2', 'perm-2-1')
+      acl.addRoleDomainResourcePermission('foo', 'domain', 'res-2', 'perm-2-2')
+      acl.addRoleDomainResourcePermission('baz', 'domain', 'res-1', 'perm-1-1')
+      acl.addRoleDomainResourcePermission('baz', 'domain', 'res-1', 'perm-1-2')
+      acl.addRoleDomainResourcePermission('baz', 'domain', 'res-1', 'perm-1-3')
       context(this, { title:'acl.roles', value:acl.roles })
       expect(Acl.from(acl.roles).roles).to.deep.equal(acl.roles)
     })
@@ -266,7 +266,7 @@ describe('acl', () =>
     })
   })
 
-  describe('hasRoleResource(role, resource)', () =>
+  describe('hasRoleDomainResource(role, domain, resource)', () =>
   {
     it('should return true only if the role has the resource', () =>
     {
@@ -274,15 +274,15 @@ describe('acl', () =>
       acl       = new Acl,
       role      = 'foo',
       resource  = 'bar'
-      expect(acl.hasRoleResource(role, resource)).to.be.equal(false)
+      expect(acl.hasRoleDomainResource(role, 'domain', resource)).to.be.equal(false)
       acl.addRole(role)
-      expect(acl.hasRoleResource(role, resource)).to.be.equal(false)
-      acl.addRoleResource(role, resource)
-      expect(acl.hasRoleResource(role, resource)).to.be.equal(true)
+      expect(acl.hasRoleDomainResource(role, 'domain', resource)).to.be.equal(false)
+      acl.addRoleDomainResource(role, 'domain', resource)
+      expect(acl.hasRoleDomainResource(role, 'domain', resource)).to.be.equal(true)
     })
   })
 
-  describe('addRoleResource(role, resource)', () =>
+  describe('addRoleDomainResource(role, domain, resource)', () =>
   {
     it('should be able to add a resource to a role', () =>
     {
@@ -290,25 +290,26 @@ describe('acl', () =>
       acl       = new Acl,
       role      = 'foo',
       resource  = 'bar'
-      expect(acl.hasRoleResource(role, resource)).to.be.equal(false)
-      acl.addRoleResource(role, resource)
-      expect(acl.hasRoleResource(role, resource)).to.be.equal(true)
+      expect(acl.hasRoleDomainResource(role, 'domain', resource)).to.be.equal(false)
+      acl.addRoleDomainResource(role, 'domain', resource)
+      expect(acl.hasRoleDomainResource(role, 'domain', resource)).to.be.equal(true)
     })
   })
 
-  describe('removeRoleResource(role, resource)', () =>
+  describe('removeRoleDomainResource(role, domain, resource)', () =>
   {
     it('should be able to remove a resource from a role', () =>
     {
       const
       acl       = new Acl,
       role      = 'foo',
+      domain    = 'domain',
       resource  = 'bar'
-      expect(acl.hasRoleResource(role, resource)).to.be.equal(false)
-      acl.addRoleResource(role, resource)
-      expect(acl.hasRoleResource(role, resource)).to.be.equal(true)
-      acl.removeRoleResource(role, resource)
-      expect(acl.hasRoleResource(role, resource)).to.be.equal(false)
+      expect(acl.hasRoleDomainResource(role, domain, resource)).to.be.equal(false)
+      acl.addRoleDomainResource(role, domain, resource)
+      expect(acl.hasRoleDomainResource(role, domain, resource)).to.be.equal(true)
+      acl.removeRoleDomainResource(role, domain, resource)
+      expect(acl.hasRoleDomainResource(role, domain, resource)).to.be.equal(false)
     })
 
     it('removing a resource from a role should not remove the role', () =>
@@ -317,13 +318,13 @@ describe('acl', () =>
       acl       = new Acl,
       role      = 'foo',
       resource  = 'bar'
-      acl.addRoleResource(role, resource)
-      acl.removeRoleResource(role, resource)
+      acl.addRoleDomainResource(role, 'domain', resource)
+      acl.removeRoleDomainResource(role, 'domain', resource)
       expect(acl.hasRole(role)).to.be.equal(true)
     })
   })
 
-  describe('removeResource(resource)', () =>
+  describe('removeDomainResource(domain, resource)', () =>
   {
     it('should be able to remove a resource from all roles', () =>
     {
@@ -334,19 +335,19 @@ describe('acl', () =>
       role3     = 'baz',
       resource  = 'qux'
       acl.addRole(role1)
-      acl.addRoleResource(role2, resource)
-      acl.addRoleResource(role3, resource)
-      expect(acl.hasRoleResource(role1, resource)).to.be.equal(false)
-      expect(acl.hasRoleResource(role2, resource)).to.be.equal(true)
-      expect(acl.hasRoleResource(role3, resource)).to.be.equal(true)
-      acl.removeResource(resource)
-      expect(acl.hasRoleResource(role1, resource)).to.be.equal(false)
-      expect(acl.hasRoleResource(role2, resource)).to.be.equal(false)
-      expect(acl.hasRoleResource(role3, resource)).to.be.equal(false)
+      acl.addRoleDomainResource(role2, 'domain', resource)
+      acl.addRoleDomainResource(role3, 'domain', resource)
+      expect(acl.hasRoleDomainResource(role1, 'domain', resource)).to.be.equal(false)
+      expect(acl.hasRoleDomainResource(role2, 'domain', resource)).to.be.equal(true)
+      expect(acl.hasRoleDomainResource(role3, 'domain', resource)).to.be.equal(true)
+      acl.removeDomainResource('domain', resource)
+      expect(acl.hasRoleDomainResource(role1, 'domain', resource)).to.be.equal(false)
+      expect(acl.hasRoleDomainResource(role2, 'domain', resource)).to.be.equal(false)
+      expect(acl.hasRoleDomainResource(role3, 'domain', resource)).to.be.equal(false)
     })
   })
 
-  describe('hasRoleResourcePermission(role, resource, permission)', () =>
+  describe('hasRoleDomainResourcePermission(role, domain, resource, permission)', () =>
   {
     it('should return true only if the role has the permission', () =>
     {
@@ -355,17 +356,17 @@ describe('acl', () =>
       role  = 'foo',
       res   = 'bar',
       per   = 'baz'
-      expect(acl.hasRoleResourcePermission(role, res, per)).to.be.equal(false)
+      expect(acl.hasRoleDomainResourcePermission(role, 'domain', res, per)).to.be.equal(false)
       acl.addRole(role)
-      expect(acl.hasRoleResourcePermission(role, res, per)).to.be.equal(false)
-      acl.addRoleResource(role, res)
-      expect(acl.hasRoleResourcePermission(role, res, per)).to.be.equal(false)
-      acl.addRoleResourcePermission(role, res, per)
-      expect(acl.hasRoleResourcePermission(role, res, per)).to.be.equal(true)
+      expect(acl.hasRoleDomainResourcePermission(role, 'domain', res, per)).to.be.equal(false)
+      acl.addRoleDomainResource(role, 'domain', res)
+      expect(acl.hasRoleDomainResourcePermission(role, 'domain', res, per)).to.be.equal(false)
+      acl.addRoleDomainResourcePermission(role, 'domain', res, per)
+      expect(acl.hasRoleDomainResourcePermission(role, 'domain', res, per)).to.be.equal(true)
     })
   })
 
-  describe('addRoleResourcePermission(role, resource, permission)', () =>
+  describe('addRoleDomainResourcePermission(role, domain, resource, permission)', () =>
   {
     it('should be able to add a permission to a role', () =>
     {
@@ -374,9 +375,9 @@ describe('acl', () =>
       role  = 'foo',
       res   = 'bar',
       per   = 'baz'
-      expect(acl.hasRoleResourcePermission(role, res, per)).to.be.equal(false)
-      acl.addRoleResourcePermission(role, res, per)
-      expect(acl.hasRoleResourcePermission(role, res, per)).to.be.equal(true)
+      expect(acl.hasRoleDomainResourcePermission(role, 'domain', res, per)).to.be.equal(false)
+      acl.addRoleDomainResourcePermission(role, 'domain', res, per)
+      expect(acl.hasRoleDomainResourcePermission(role, 'domain', res, per)).to.be.equal(true)
     })
 
     it('should add a resource to the role', () =>
@@ -386,9 +387,9 @@ describe('acl', () =>
       role  = 'foo',
       res   = 'bar',
       per   = 'baz'
-      expect(acl.hasRoleResource(role, res)).to.be.equal(false)
-      acl.addRoleResourcePermission(role, res, per)
-      expect(acl.hasRoleResource(role, res)).to.be.equal(true)
+      expect(acl.hasRoleDomainResource(role, 'domain', res)).to.be.equal(false)
+      acl.addRoleDomainResourcePermission(role, 'domain', res, per)
+      expect(acl.hasRoleDomainResource(role, 'domain', res)).to.be.equal(true)
     })
 
     it('should add a role', () =>
@@ -399,12 +400,12 @@ describe('acl', () =>
       res   = 'bar',
       per   = 'baz'
       expect(acl.hasRole(role)).to.be.equal(false)
-      acl.addRoleResourcePermission(role, res, per)
+      acl.addRoleDomainResourcePermission(role, 'domain', res, per)
       expect(acl.hasRole(role)).to.be.equal(true)
     })
   })
 
-  describe('removeRoleResourcePermission(role, resource, permission)', () =>
+  describe('removeRoleDomainResourcePermission(role, domain, resource, permission)', () =>
   {
     it('should remove a permission from a role resource', () =>
     {
@@ -413,14 +414,14 @@ describe('acl', () =>
       role  = 'foo',
       res   = 'bar',
       per   = 'baz'
-      acl.addRoleResourcePermission(role, res, per)
-      expect(acl.hasRoleResourcePermission(role, res, per)).to.be.equal(true)
-      acl.removeRoleResourcePermission(role, res, per)
-      expect(acl.hasRoleResourcePermission(role, res, per)).to.be.equal(false)
+      acl.addRoleDomainResourcePermission(role, 'domain', res, per)
+      expect(acl.hasRoleDomainResourcePermission(role, 'domain', res, per)).to.be.equal(true)
+      acl.removeRoleDomainResourcePermission(role, 'domain', res, per)
+      expect(acl.hasRoleDomainResourcePermission(role, 'domain', res, per)).to.be.equal(false)
     })
   })
 
-  describe('removeResourcePermission(resource, permission)', () =>
+  describe('removeDomainResourcePermission(domain, resource, permission)', () =>
   {
     it('should remove a permission from a resource on all roles', () =>
     {
@@ -431,16 +432,16 @@ describe('acl', () =>
       role3 = 'foo3',
       res   = 'bar',
       per   = 'baz'
-      acl.addRoleResource(role1, res)
-      acl.addRoleResourcePermission(role2, res, per)
-      acl.addRoleResourcePermission(role3, res, per)
-      expect(acl.hasRoleResourcePermission(role1, res, per)).to.be.equal(false)
-      expect(acl.hasRoleResourcePermission(role2, res, per)).to.be.equal(true)
-      expect(acl.hasRoleResourcePermission(role3, res, per)).to.be.equal(true)
-      acl.removeResourcePermission(res, per)
-      expect(acl.hasRoleResourcePermission(role1, res, per)).to.be.equal(false)
-      expect(acl.hasRoleResourcePermission(role2, res, per)).to.be.equal(false)
-      expect(acl.hasRoleResourcePermission(role3, res, per)).to.be.equal(false)
+      acl.addRoleDomainResource(role1, 'domain', res)
+      acl.addRoleDomainResourcePermission(role2, 'domain', res, per)
+      acl.addRoleDomainResourcePermission(role3, 'domain', res, per)
+      expect(acl.hasRoleDomainResourcePermission(role1, 'domain', res, per)).to.be.equal(false)
+      expect(acl.hasRoleDomainResourcePermission(role2, 'domain', res, per)).to.be.equal(true)
+      expect(acl.hasRoleDomainResourcePermission(role3, 'domain', res, per)).to.be.equal(true)
+      acl.removeDomainResourcePermission('domain', res, per)
+      expect(acl.hasRoleDomainResourcePermission(role1, 'domain', res, per)).to.be.equal(false)
+      expect(acl.hasRoleDomainResourcePermission(role2, 'domain', res, per)).to.be.equal(false)
+      expect(acl.hasRoleDomainResourcePermission(role3, 'domain', res, per)).to.be.equal(false)
     })
 
     it('should not remove the role and resouce', () =>
@@ -452,13 +453,13 @@ describe('acl', () =>
       role3 = 'foo3',
       res   = 'bar',
       per   = 'baz'
-      acl.addRoleResource(role1, res)
-      acl.addRoleResourcePermission(role2, res, per)
-      acl.addRoleResourcePermission(role3, res, per)
-      acl.removeResourcePermission(res, per)
-      expect(acl.hasRoleResource(role1, res, per)).to.be.equal(true)
-      expect(acl.hasRoleResource(role2, res, per)).to.be.equal(true)
-      expect(acl.hasRoleResource(role3, res, per)).to.be.equal(true)
+      acl.addRoleDomainResource(role1, 'domain', res)
+      acl.addRoleDomainResourcePermission(role2, 'domain', res, per)
+      acl.addRoleDomainResourcePermission(role3, 'domain', res, per)
+      acl.removeDomainResourcePermission(res, 'domain', per)
+      expect(acl.hasRoleDomainResource(role1, 'domain', res, per)).to.be.equal(true)
+      expect(acl.hasRoleDomainResource(role2, 'domain', res, per)).to.be.equal(true)
+      expect(acl.hasRoleDomainResource(role3, 'domain', res, per)).to.be.equal(true)
     })
   })
 
@@ -532,12 +533,13 @@ describe('acl', () =>
       acl         = new Acl,
       user        = 'foo',
       role        = 'bar',
+      domain      = 'domain',
       resource    = 'baz',
       permission  = 'qux'
 
       acl.addRoleUser(role, user)
-      acl.addRoleResourcePermission(role, resource, permission)
-      const result = acl.isUserAuthorized(user, resource, permission)
+      acl.addRoleDomainResourcePermission(role, domain, resource, permission)
+      const result = acl.isUserAuthorized(user, domain, resource, permission)
       expect(result).to.be.equal(true)
     })
 
@@ -549,18 +551,19 @@ describe('acl', () =>
       user2       = 'foo2',
       role1       = 'bar1',
       role2       = 'bar2',
+      domain      = 'domain',
       resource1   = 'baz1',
       resource2   = 'baz2',
       permission  = 'qux'
 
       acl.addRoleUser(role1, user1)
       acl.addRoleUser(role2, user2)
-      acl.addRoleResourcePermission(role1, resource1, permission)
-      acl.addRoleResourcePermission(role2, resource2, permission)
-      const result1 = acl.isUserAuthorized(user1, resource2, permission)
+      acl.addRoleDomainResourcePermission(role1, domain, resource1, permission)
+      acl.addRoleDomainResourcePermission(role2, domain, resource2, permission)
+      const result1 = acl.isUserAuthorized(user1, domain, resource2, permission)
       expect(result1).to.be.equal(false)
       acl.addRoleChild(role1, role2)
-      const result2 = acl.isUserAuthorized(user1, resource2, permission)
+      const result2 = acl.isUserAuthorized(user1, domain, resource2, permission)
       expect(result2).to.be.equal(true)
     })
 
@@ -572,17 +575,18 @@ describe('acl', () =>
       user2       = 'foo2',
       role1       = 'bar1',
       role2       = 'bar2',
+      domain      = 'domain',
       resource1   = 'baz1',
       resource2   = 'baz2',
       permission  = 'qux'
 
       acl.addRoleUser(role1, user1)
       acl.addRoleUser(role2, user2)
-      acl.addRoleResourcePermission(role1, resource1, permission)
-      acl.addRoleResourcePermission(role2, resource2, permission)
-      const result1 = acl.isUserAuthorized(user1, resource1, permission)
+      acl.addRoleDomainResourcePermission(role1, domain, resource1, permission)
+      acl.addRoleDomainResourcePermission(role2, domain, resource2, permission)
+      const result1 = acl.isUserAuthorized(user1, domain, resource1, permission)
       expect(result1).to.be.equal(true)
-      const result2 = acl.isUserAuthorized(user1, resource2, permission)
+      const result2 = acl.isUserAuthorized(user1, domain, resource2, permission)
       expect(result2).to.be.equal(false)
     })
   })
@@ -594,12 +598,13 @@ describe('acl', () =>
       const
       acl         = new Acl,
       role        = 'bar',
+      domain      = 'domain',
       resource    = 'baz',
       permission  = 'qux'
 
       acl.addRole(role)
-      acl.addRoleResourcePermission(role, resource, permission)
-      const result = acl.isRoleAuthorized(role, resource, permission)
+      acl.addRoleDomainResourcePermission(role, domain, resource, permission)
+      const result = acl.isRoleAuthorized(role, domain, resource, permission)
       expect(result).to.be.equal(true)
     })
 
@@ -609,18 +614,19 @@ describe('acl', () =>
       acl         = new Acl,
       role1       = 'bar1',
       role2       = 'bar2',
+      domain      = 'domain',
       resource1   = 'baz1',
       resource2   = 'baz2',
       permission  = 'qux'
 
       acl.addRole(role1)
       acl.addRole(role2)
-      acl.addRoleResourcePermission(role1, resource1, permission)
-      acl.addRoleResourcePermission(role2, resource2, permission)
-      const result1 = acl.isRoleAuthorized(role1, resource2, permission)
+      acl.addRoleDomainResourcePermission(role1, domain, resource1, permission)
+      acl.addRoleDomainResourcePermission(role2, domain, resource2, permission)
+      const result1 = acl.isRoleAuthorized(role1, domain, resource2, permission)
       expect(result1).to.be.equal(false)
       acl.addRoleChild(role1, role2)
-      const result2 = acl.isRoleAuthorized(role1, resource2, permission)
+      const result2 = acl.isRoleAuthorized(role1, domain, resource2, permission)
       expect(result2).to.be.equal(true)
     })
 
@@ -630,17 +636,18 @@ describe('acl', () =>
       acl         = new Acl,
       role1       = 'bar1',
       role2       = 'bar2',
+      domain      = 'domain',
       resource1   = 'baz1',
       resource2   = 'baz2',
       permission  = 'qux'
 
       acl.addRole(role1)
       acl.addRole(role2)
-      acl.addRoleResourcePermission(role1, resource1, permission)
-      acl.addRoleResourcePermission(role2, resource2, permission)
-      const result1 = acl.isRoleAuthorized(role1, resource1, permission)
+      acl.addRoleDomainResourcePermission(role1, domain, resource1, permission)
+      acl.addRoleDomainResourcePermission(role2, domain, resource2, permission)
+      const result1 = acl.isRoleAuthorized(role1, domain, resource1, permission)
       expect(result1).to.be.equal(true)
-      const result2 = acl.isRoleAuthorized(role1, resource2, permission)
+      const result2 = acl.isRoleAuthorized(role1, domain, resource2, permission)
       expect(result2).to.be.equal(false)
     })
 
@@ -649,15 +656,16 @@ describe('acl', () =>
       const
       acl         = new Acl,
       role1       = 'bar1',
+      domain      = 'domain',
       resource1   = 'baz1',
       resource2   = 'baz2',
       permission  = 'qux'
 
       acl.addRole(role1)
-      acl.addRoleResourcePermission(role1, '*', permission)
-      const result1 = acl.isRoleAuthorized(role1, resource1, permission)
+      acl.addRoleDomainResourcePermission(role1, domain, '*', permission)
+      const result1 = acl.isRoleAuthorized(role1, domain, resource1, permission)
       expect(result1).to.be.equal(true)
-      const result2 = acl.isRoleAuthorized(role1, resource2, permission)
+      const result2 = acl.isRoleAuthorized(role1, domain, resource2, permission)
       expect(result2).to.be.equal(true)
     })
 
@@ -666,15 +674,16 @@ describe('acl', () =>
       const
       acl         = new Acl,
       role1       = 'bar1',
+      domain      = 'domain',
       resource1   = 'baz1',
       permission1 = 'qux1',
       permission2 = 'qux2'
 
       acl.addRole(role1)
-      acl.addRoleResourcePermission(role1, resource1, '*')
-      const result1 = acl.isRoleAuthorized(role1, resource1, permission1)
+      acl.addRoleDomainResourcePermission(role1, domain, resource1, '*')
+      const result1 = acl.isRoleAuthorized(role1, domain, resource1, permission1)
       expect(result1).to.be.equal(true)
-      const result2 = acl.isRoleAuthorized(role1, resource1, permission2)
+      const result2 = acl.isRoleAuthorized(role1, domain, resource1, permission2)
       expect(result2).to.be.equal(true)
     })
 
@@ -683,16 +692,17 @@ describe('acl', () =>
       const
       acl         = new Acl,
       role1       = 'bar1',
+      domain      = 'domain',
       resource1   = 'baz1',
       resource2   = 'baz2',
       permission1 = 'qux1',
       permission2 = 'qux2'
 
       acl.addRole(role1)
-      acl.addRoleResourcePermission(role1, '*', '*')
-      const result1 = acl.isRoleAuthorized(role1, resource1, permission1)
+      acl.addRoleDomainResourcePermission(role1, domain, '*', '*')
+      const result1 = acl.isRoleAuthorized(role1, domain, resource1, permission1)
       expect(result1).to.be.equal(true)
-      const result2 = acl.isRoleAuthorized(role1, resource2, permission2)
+      const result2 = acl.isRoleAuthorized(role1, domain, resource2, permission2)
       expect(result2).to.be.equal(true)
     })
 
@@ -702,6 +712,7 @@ describe('acl', () =>
       acl         = new Acl,
       role1       = 'bar1',
       role2       = 'bar2',
+      domain      = 'domain',
       resource1   = 'baz1',
       resource2   = 'baz2',
       permission1 = 'qux1',
@@ -709,11 +720,11 @@ describe('acl', () =>
 
       acl.addRole(role1)
       acl.addRole(role2)
-      acl.addRoleResourcePermission(role1, resource1, permission1)
-      acl.addRoleResourcePermission(role2, resource2, permission2)
-      const result1 = acl.isRoleAuthorized(role1, resource1)
+      acl.addRoleDomainResourcePermission(role1, domain, resource1, permission1)
+      acl.addRoleDomainResourcePermission(role2, domain, resource2, permission2)
+      const result1 = acl.isRoleAuthorized(role1, domain, resource1)
       expect(result1).to.be.equal(true)
-      const result2 = acl.isRoleAuthorized(role1, resource2)
+      const result2 = acl.isRoleAuthorized(role1, domain, resource2)
       expect(result2).to.be.equal(false)
     })
   })

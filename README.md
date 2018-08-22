@@ -29,11 +29,12 @@ ACL - Access Control List
 const
 acl         = new Acl,
 role        = 'foo',
-resource    = 'bar',
-permission  = 'baz'
+domain      = 'bar',
+resource    = 'baz',
+permission  = 'qux'
 
-acl.addRoleResourcePermission(role, resource, permission)
-const authorized = acl.isRoleAuthorized(role, resource, permission)
+acl.addRoleResourcePermission(role, domain, resource, permission)
+const authorized = acl.isRoleAuthorized(role, domain, resource, permission)
 // authorized == true
 ```
 
@@ -42,13 +43,14 @@ const authorized = acl.isRoleAuthorized(role, resource, permission)
 ```js
 const
 acl         = new Acl,
-user        = 'foo',
-role        = 'bar',
-resource    = 'baz',
-permission  = 'qux'
+user        = 'foobar',
+role        = 'bazbar',
+domain      = 'barbaz',
+resource    = 'bazqux',
+permission  = 'quxfoo'
 
 acl.addRoleUser(role, user)
-acl.addRoleResourcePermission(role, resource, permission)
-const authorized = acl.isUserAuthorized(user, resource, permission)
+acl.addRoleResourcePermission(role, domain, resource, permission)
+const authorized = acl.isUserAuthorized(user, domain, resource, permission)
 // authorized == true
 ```
