@@ -525,7 +525,7 @@ describe('acl', () =>
     })
   })
 
-  describe('isUserAuthorized(user, resource, permission)', () =>
+  describe('isUserAuthorized(user, domain, resource, permission)', () =>
   {
     it('should only allow a valid permission', () =>
     {
@@ -591,7 +591,7 @@ describe('acl', () =>
     })
   })
 
-  describe('isRoleAuthorized(role, resource, permission)', () =>
+  describe('isRoleAuthorized(role, domain, resource, permission)', () =>
   {
     it('should only allow a valid permission', () =>
     {

@@ -302,16 +302,22 @@ module.exports = class Acl
     {
       for(const role of roles)
         if(this.hasRoleDomainResourcePermission(role, domain, resource, permission)
+        || this.hasRoleDomainResourcePermission(role, '*', resource, permission)
         || this.hasRoleDomainResourcePermission(role, domain, '*', permission)
         || this.hasRoleDomainResourcePermission(role, domain, resource, '*')
-        || this.hasRoleDomainResourcePermission(role, domain, '*', '*'))
+        || this.hasRoleDomainResourcePermission(role, '*', '*', permission)
+        || this.hasRoleDomainResourcePermission(role, '*', resource, '*')
+        || this.hasRoleDomainResourcePermission(role, domain, '*', '*')
+        || this.hasRoleDomainResourcePermission(role, '*', '*', '*'))
           return true
     }
     else
     {
       for(const role of roles)
         if(this.hasRoleDomainResource(role, domain, resource)
-        || this.hasRoleDomainResource(role, domain, '*'))
+        || this.hasRoleDomainResource(role, '*', resource)
+        || this.hasRoleDomainResource(role, domain, '*')
+        || this.hasRoleDomainResource(role, '*', '*'))
           return true
     }
 
