@@ -308,7 +308,15 @@ module.exports = class Acl
         || this.hasRoleDomainResourcePermission(role, '*', '*', permission)
         || this.hasRoleDomainResourcePermission(role, '*', resource, '*')
         || this.hasRoleDomainResourcePermission(role, domain, '*', '*')
-        || this.hasRoleDomainResourcePermission(role, '*', '*', '*'))
+        || this.hasRoleDomainResourcePermission(role, '*', '*', '*')
+        || this.hasRoleDomainResourcePermission('*', domain, resource, permission)
+        || this.hasRoleDomainResourcePermission('*', '*', resource, permission)
+        || this.hasRoleDomainResourcePermission('*', domain, '*', permission)
+        || this.hasRoleDomainResourcePermission('*', domain, resource, '*')
+        || this.hasRoleDomainResourcePermission('*', '*', '*', permission)
+        || this.hasRoleDomainResourcePermission('*', '*', resource, '*')
+        || this.hasRoleDomainResourcePermission('*', domain, '*', '*')
+        || this.hasRoleDomainResourcePermission('*', '*', '*', '*'))
           return true
     }
     else
@@ -317,7 +325,11 @@ module.exports = class Acl
         if(this.hasRoleDomainResource(role, domain, resource)
         || this.hasRoleDomainResource(role, '*', resource)
         || this.hasRoleDomainResource(role, domain, '*')
-        || this.hasRoleDomainResource(role, '*', '*'))
+        || this.hasRoleDomainResource(role, '*', '*')
+        || this.hasRoleDomainResource('*', domain, resource)
+        || this.hasRoleDomainResource('*', '*', resource)
+        || this.hasRoleDomainResource('*', domain, '*')
+        || this.hasRoleDomainResource('*', '*', '*'))
           return true
     }
 
