@@ -1,57 +1,8 @@
-module.exports = class Acl
+class Acl
 {
   constructor()
   {
     this.roles = {}
-  }
-
-  static from(roles)
-  {
-    const acl = new Acl
-
-    for(const role in roles)
-      for(const key in roles[role])
-        switch(key)
-        {
-          case 'users':
-            for(const user of roles[role].users)
-              acl.addRoleUser(role, user)
-            break
-
-          case 'children':
-            for(const child of roles[role].children)
-              acl.addRoleChild(role, child)
-            break
-
-          case 'domains':
-            if(roles[role].domains)
-              for(const domain in roles[role].domains)
-              {
-                acl.addRoleDomain(role, domain)
-
-                for(const resource in roles[role].domains[domain])
-                {
-                  acl.addRoleDomainResource(role, domain, resource)
-
-                  const
-                  _reference  = roles[role].domains[domain][resource],
-                  permissions = Array.isArray(_reference)
-                  ?  _reference
-                  : [_reference]
-
-                  for(const permission of permissions)
-                    acl.addRoleDomainResourcePermission(role, domain, resource, permission)
-                }
-              }
-            break
-
-          default:
-            const error = new Error(`unknown key:"${key}"`)
-            error.code = 'ERR_INVALID_ARG_KEY'
-            throw error
-        }
-
-    return acl
   }
 
   hasRole(role)
@@ -335,4 +286,11 @@ module.exports = class Acl
 
     return false
   }
+
+  dump()
+  {
+    return JSON.parse(JSON.stringify(this.roles))
+  }
 }
+
+module.exports = Acl

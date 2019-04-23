@@ -1,11 +1,13 @@
 describe('acl', () =>
 {
   const
-  expect  = require('chai').expect,
-  context = require('mochawesome/addContext'),
-  Acl     = require('.')
+  expect      = require('chai').expect,
+  context     = require('mochawesome/addContext'),
+  Acl         = require('..'),
+  AclFactory  = require('../factory'),
+  aclFactory  = new AclFactory
 
-  describe('from(roles)', () =>
+  describe('can create an acl from roles', () =>
   {
     it('should be able to create an instance from a configured json', function()
     {
@@ -22,12 +24,13 @@ describe('acl', () =>
       acl.addRoleDomainResourcePermission('baz', 'domain', 'res-1', 'perm-1-1')
       acl.addRoleDomainResourcePermission('baz', 'domain', 'res-1', 'perm-1-2')
       acl.addRoleDomainResourcePermission('baz', 'domain', 'res-1', 'perm-1-3')
-      context(this, { title:'acl.roles', value:acl.roles })
-      expect(Acl.from(acl.roles).roles).to.deep.equal(acl.roles)
+      const dump = acl.dump()
+      context(this, { title:'dump', value:dump })
+      expect(aclFactory.create(dump).roles).to.deep.equal(acl.roles)
     })
 
     it('should throw an error if there is an invalid key in the arg',
-    () => expect(Acl.from.bind(null, { foo:{ bar:'baz' } })).to.throw(Error))
+    () => expect(aclFactory.create.bind(aclFactory, { foo:{ bar:'baz' } })).to.throw(Error))
   })
 
   describe('hasRole(role)', () =>
