@@ -1,6 +1,6 @@
 {
   "name": "@superhero/acl",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Access Control List",
   "repository": "git@github.com:superhero/js.core.git",
   "main": "index.js",

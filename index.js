@@ -214,22 +214,19 @@ class Acl
   getRolesRecursively(role)
   {
     const
-    roles = [],
+    roles = [role],
     chain = (role) =>
     {
-      for(const roleChild of this.roles[role].children)
-        if(this.hasRole(roleChild) && !roles.includes(roleChild))
-        {
-          roles.push(roleChild)
-          chain(roleChild)
-        }
+      if(this.hasRole(role))
+        for(const roleChild of this.roles[role].children)
+          if(roles.includes(roleChild) === false)
+          {
+            roles.push(roleChild)
+            chain(roleChild)
+          }
     }
 
-    if(this.hasRole(role))
-    {
-      roles.push(role)
-      chain(role)
-    }
+    chain(role)
 
     return roles
   }
